@@ -1,4 +1,3 @@
-# EC145-Rotorcraft-Aerodynamics-Flight-Performance
 # EC145 / BK117 C-2: Rotor Aerodynamics, Stability & Flight Performance Framework
 
 An end-to-end computational flight mechanics framework developed in **MATLAB** for the **Airbus Helicopters EC145 (Kawasaki BK117 C-2)** twin-engine light utility helicopter.
@@ -30,6 +29,7 @@ The reference parameters modeled reflect the EC145 / BK117 C-2 certification bas
 
 ## Repository Structure
 
+```text
 ├── ec145_weight_and_balance.m      # Module 1: Longitudinal CG envelope & loading scenarios
 ├── ec145_bem_rotor_aerodynamics.m  # Module 2: Blade Element Momentum (BEM) multi-regime solver
 ├── ec145_flight_performance.m      # Module 3: Power balance, ceilings & operational envelope
