@@ -29,20 +29,13 @@ The reference parameters modeled reflect the EC145 / BK117 C-2 certification bas
 
 ## Repository Structure
 
-    ├── ec145_weight_and_balance.m      # Module 1: Longitudinal CG envelope & loading scenarios
-    ├── ec145_bem_rotor_aerodynamics.m  # Module 2: Blade Element Momentum (BEM) multi-regime solver
-    ├── ec145_flight_performance.m      # Module 3: Power balance, ceilings & operational envelope
-    ├── figures/                        # Generated figures and visual validation plots
-    │   ├── cg_envelope.png
-    │   ├── power_required_available.png
-    │   ├── rate_of_climb.png
-    │   ├── autorotation_descent.png
-    │   ├── flight_ceiling_envelope.png
-    │   ├── ground_effect_power.png
-    │   ├── horizontal_acceleration.png
-    │   └── bem_thrust_distribution.png
-    └── README.md                       # Complete technical documentation
-
+| File / Directory | Module & Technical Description |
+| :--- | :--- |
+| `ec145_weight_and_balance.m` | **Module 1:** Longitudinal CG envelope & operational loading scenarios |
+| `ec145_bem_rotor_aerodynamics.m` | **Module 2:** Blade Element Momentum (BEM) multi-regime aerodynamic solver |
+| `ec145_flight_performance.m` | **Module 3:** Power balance, flight ceilings, autorotation & ground effect |
+| `figures/` | Directory containing generated MATLAB validation plots and envelopes |
+| `README.md` | Mathematical formulation and engineering documentation |
 ---
 
 ## 1. Weight & Balance: Longitudinal Center of Gravity Envelope
