@@ -29,20 +29,19 @@ The reference parameters modeled reflect the EC145 / BK117 C-2 certification bas
 
 ## Repository Structure
 
-```text
-├── ec145_weight_and_balance.m      # Module 1: Longitudinal CG envelope & loading scenarios
-├── ec145_bem_rotor_aerodynamics.m  # Module 2: Blade Element Momentum (BEM) multi-regime solver
-├── ec145_flight_performance.m      # Module 3: Power balance, ceilings & operational envelope
-├── figures/                        # Generated figures and visual validation plots
-│   ├── cg_envelope.png
-│   ├── power_required_available.png
-│   ├── rate_of_climb.png
-│   ├── autorotation_descent.png
-│   ├── flight_ceiling_envelope.png
-│   ├── ground_effect_power.png
-│   ├── horizontal_acceleration.png
-│   └── bem_thrust_distribution.png
-└── README.md                       # Complete technical documentation
+    ├── ec145_weight_and_balance.m      # Module 1: Longitudinal CG envelope & loading scenarios
+    ├── ec145_bem_rotor_aerodynamics.m  # Module 2: Blade Element Momentum (BEM) multi-regime solver
+    ├── ec145_flight_performance.m      # Module 3: Power balance, ceilings & operational envelope
+    ├── figures/                        # Generated figures and visual validation plots
+    │   ├── cg_envelope.png
+    │   ├── power_required_available.png
+    │   ├── rate_of_climb.png
+    │   ├── autorotation_descent.png
+    │   ├── flight_ceiling_envelope.png
+    │   ├── ground_effect_power.png
+    │   ├── horizontal_acceleration.png
+    │   └── bem_thrust_distribution.png
+    └── README.md                       # Complete technical documentation
 
 ---
 
@@ -171,14 +170,16 @@ $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
 ## How to Run
 
 1. Clone the repository:
-git clone https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git
-cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
+
+    git clone https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git
+    cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
 
 2. Open MATLAB and add the root folder to your path.
 3. Run the analysis scripts individually:
-run('ec145_weight_and_balance.m')      % Generates CG envelope plot
-run('ec145_bem_rotor_aerodynamics.m')  % Computes multi-regime BEM distributions
-run('ec145_flight_performance.m')      % Computes power balance & flight ceilings
+
+    run('ec145_weight_and_balance.m')      % Generates CG envelope plot
+    run('ec145_bem_rotor_aerodynamics.m')  % Computes multi-regime BEM distributions
+    run('ec145_flight_performance.m')      % Computes power balance & flight ceilings
 
 ---
 
