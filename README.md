@@ -163,16 +163,27 @@ $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
 ## How to Run
 
 1. Clone the repository:
+```bash
+git clone [https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git](https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git)
+cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
+```
 
-    git clone https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git
-    cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
+2. Open MATLAB and ensure all scripts are in the current working directory.
 
-2. Open MATLAB and add the root folder to your path.
 3. Run the analysis scripts individually:
+```matlab
+run('ec145_weight_and_balance.m');       % CG envelope & loading configurations
+run('ec145_bem_rotor_aerodynamics.m');   % BEM radial/azimuthal aerodynamic distributions
+run('ec145_flight_performance.m');       % Power required/available & flight ceilings
+```
 
-    run('ec145_weight_and_balance.m')      % Generates CG envelope plot
-    run('ec145_bem_rotor_aerodynamics.m')  % Computes multi-regime BEM distributions
-    run('ec145_flight_performance.m')      % Computes power balance & flight ceilings
+---
+
+## Academic Context
+
+This project was developed within the **Faculty of Aerospace Engineering** at **National University of Science and Technology POLITEHNICA Bucharest** (Specialization: *Aerospace Construction*), integrating theoretical and numerical coursework from:
+* **Helicopter Aerodynamics & Flight Mechanics** (*Elicoptere / Dinamica Elicopterului*)
+* **Rotor Aerodynamics & Blade Element Momentum Theory (BEMT)**
 
 ---
 
