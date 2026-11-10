@@ -1,195 +1,145 @@
-# EC145 / BK117 C-2: Rotor Aerodynamics, Stability & Flight Performance Framework
+# EC145 / BK117 C-2 — Rotor Aerodynamics and Flight Performance
 
-An end-to-end computational flight mechanics framework developed in **MATLAB** for the **Airbus Helicopters EC145 (Kawasaki BK117 C-2)** twin-engine light utility helicopter.
+This repository contains selected MATLAB analyses from a larger university project on the Eurocopter EC145 (BK117 C-2). I developed the numerical work during the **Helicopters** course at the Faculty of Aerospace Engineering, National University of Science and Technology POLITEHNICA Bucharest.
 
-The suite models the full aerodynamic and operational flight envelope:
-1. **Weight & Balance & Longitudinal Center of Gravity (CG) Envelope Verification** across 6 operational configurations.
-2. **2D/3D Blade Element Momentum (BEM) Aerodynamic Solver** with cyclic pitch/flapping dynamics and non-linear induced inflow iterative relaxation across 4 flight conditions.
-3. **Comprehensive Flight Performance & Power Balance Engine** evaluating level forward flight, vertical climb capabilities, autorotation sink rates, and ground effect (IGE/OGE) up to service ceiling altitudes ($H = 0 \text{ to } 6000\text{ m}$).
+The full coursework covered the helicopter's configuration, mass and balance, rotor aerodynamics, and flight performance. The three scripts shared here focus on the computational part. The university report includes additional derivations, figures, and discussion.
 
----
+## Reference model
 
-## Technical Specifications & Reference Helicopter
+The study uses a common reference aircraft, with some parameters chosen separately for the BEM and performance exercises.
 
-The reference parameters modeled reflect the EC145 / BK117 C-2 certification baseline powered by two Turbomeca Arriel 1E2 turboshaft engines:
-
-| Parameter | Symbol | Nominal Value | Unit |
-| :--- | :---: | :---: | :---: |
-| Maximum Takeoff Weight (MTOW) | $m_{\text{MTOW}}$ | 3585 | $\text{kg}$ |
-| Empty Weight | $m_{\text{empty}}$ | 1792 | $\text{kg}$ |
-| Main Rotor Radius | $R_B$ | 5.50 | $\text{m}$ |
-| Blade Mean Chord | $c_b$ | 0.32 (Perf) / 0.30 (BEM) | $\text{m}$ |
-| Rotor Rotational Speed | $N_R$ | 383 – 395 | $\text{RPM}$ |
-| Number of Main Rotor Blades | $N_b$ | 4 | $-$ |
-| Rotor Mast Longitudinal Station | $x_{\text{mast}}$ | 4.50 | $\text{m}$ |
-| Installed Max Continuous Power (MCP, SL) | $P_{0,\text{max}}$ | 1032 | $\text{kW}$ |
-| Equivalent Parasite Drag Area | $f_A$ | 1.20 | $\text{m}^2$ |
-
----
-
-## Repository Structure
-
-| File / Directory | Module & Technical Description |
+| Parameter | Coursework value |
 | :--- | :--- |
-| `ec145_weight_and_balance.m` | **Module 1:** Longitudinal CG envelope & operational loading scenarios |
-| `ec145_bem_rotor_aerodynamics.m` | **Module 2:** Blade Element Momentum (BEM) multi-regime aerodynamic solver |
-| `ec145_flight_performance.m` | **Module 3:** Power balance, flight ceilings, autorotation & ground effect |
-| `figures/` | Directory containing generated MATLAB validation plots and envelopes |
-| `README.md` | Mathematical formulation and engineering documentation |
----
+| Reference maximum takeoff mass | 3,585 kg |
+| Empty mass for CG calculations | 1,792 kg |
+| Main rotor radius | 5.50 m |
+| Main rotor blades | 4 |
+| Rotor speed | 395 rpm (BEM); 383 rpm (performance) |
+| Mean blade chord | 0.30 m (BEM); 0.32 m (performance) |
+| Reference air density | 1.225 kg/m³ |
+| Available engine power assumed at sea level | 1,032 kW total |
+| Equivalent parasite-drag area | 1.20 m² |
 
-## 1. Weight & Balance: Longitudinal Center of Gravity Envelope
+These are the parameters adopted for the coursework models, rather than a complete set of approved flight-manual data.
 
-### Formulation
-The overall center of gravity position is determined by structural moment summation relative to the forward datum:
+## MATLAB files
 
-$$x_{\text{CG}} = \frac{M_{\text{total}}}{m_{\text{total}}} = \frac{m_{\text{empty}} x_{\text{empty}} + \sum_i m_i x_i}{m_{\text{empty}} + \sum_i m_i}$$
+| File | What it does |
+| :--- | :--- |
+| [ec145_weight_and_balance.m](ec145_weight_and_balance.m) | Calculates six loading cases from masses and longitudinal arms, then plots their CG positions against the coursework reference polygon |
+| [ec145_bem_rotor_aerodynamics.m](ec145_bem_rotor_aerodynamics.m) | Computes rotor thrust, torque, and power for four prescribed blade-pitch and flight conditions |
+| [ec145_flight_performance.m](ec145_flight_performance.m) | Estimates required/available power, power-limited speed intersections, climb, autorotation, and ground effect |
 
-The certified flight envelope is bounded by four critical vertices defined in the official Flight Manual:
-* **Point A:** $(4.377\text{ m}, 3585\text{ kg})$
-* **Point B:** $(4.544\text{ m}, 3585\text{ kg})$
-* **Point C:** $(4.667\text{ m}, 1750\text{ kg})$
-* **Point D:** $(4.337\text{ m}, 2000\text{ kg})$
+The scripts can be run independently and export vector figures to the figures directory.
 
-### Operational Loading Scenarios
-Six critical mission configurations were evaluated to ensure compliance within structural margins:
+## 1. Mass and balance
 
-| Scenario ID | Payload Configuration | Fuel State | Mass [kg] | CG Position [m] | In-Envelope Status |
-| :--- | :--- | :--- | :---: | :---: | :---: |
-| **Max P, Max F** | 8 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3585** | **4.434** | **COMPLIANT** |
-| **50% P, Max F** | 4 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3260** | **4.474** | **COMPLIANT** |
-| **0 P, Max F** | Pilot Only + Baggage | 100% ($640\text{ kg}$) | **2940** | **4.534** | **COMPLIANT** |
-| **Max P, 0 F** | 8 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2940** | **4.386** | **COMPLIANT** |
-| **50% P, 0 F** | 4 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2620** | **4.441** | **COMPLIANT** |
-| **0 P, 0 F** | Pilot Only + Baggage | Reserve ($0\text{ kg}$) | **2300** | **4.516** | **COMPLIANT** |
+The university study estimates the empty-aircraft mass distribution and the longitudinal arms of major components. For any loading case, the CG follows from the mass moments:
 
-<p align="center">
-  <img src="figures/cg_envelope.png" width="750" alt="EC145 Longitudinal CG Envelope">
-</p>
+$$
+x_{\mathrm{CG}}=\frac{m_{\mathrm{empty}}x_{\mathrm{empty}}+
+\sum_i m_i x_i}{m_{\mathrm{empty}}+\sum_i m_i}.
+$$
 
----
+The six cases have been recalculated from the component masses and stations in Tables 11–17 of the coursework report. The report's original Figure 21 used separately entered plot coordinates, so the recomputed values differ from that earlier illustration.
 
-## 2. Rotor Aerodynamics: Blade Element Momentum (BEM) Solver
+| Loading case | Calculated mass [kg] | CG station [m] | Inside reference polygon? |
+| :--- | ---: | ---: | :---: |
+| No passengers, full fuel | 2,582 | 4.398 | Yes |
+| Partial passengers, full fuel | 2,822 | 4.364 | Yes |
+| Maximum passengers, full fuel | 3,062 | 4.322 | No |
+| No passengers, no fuel | 1,942 | 4.331 | No |
+| Partial passengers, no fuel | 2,182 | 4.295 | No |
+| Maximum passengers, no fuel | 2,422 | 4.249 | No |
 
-The aerodynamic environment across the rotor disk is resolved by coupling 2D blade element strip theory with momentum conservation along differential annular rings of spanwise width $dR$.
-
-### Velocity Components & Local Aerodynamics
-For any blade station at radial coordinate $r$ and azimuth $\psi$:
-
-$$V_0(r,\psi) = V_I(r,\psi) + V_c + U \sin\alpha_T$$
-
-$$V_2(r,\psi) = \Omega r + U \cos\alpha_T \sin\psi$$
-
-$$V_1(r,\psi) = \sqrt{V_0^2 + V_2^2}, \quad \phi = \arctan\left(\frac{V_0}{V_2}\right)$$
-
-The effective angle of attack accounts for blade cyclic pitch, linear pre-twist, and induced inflow angle:
-
-$$\alpha_{\text{eff}}(r,\psi) = \theta_{\text{pitch}}(\psi) + \theta_{\text{twist}}(r) - \phi(r,\psi)$$
-
-$$\theta_{\text{twist}}(r) = \theta_0 - \theta_{\text{tw}} \cdot r$$
-
-$$\theta_{\text{pitch}}(\psi) = C + A \cos\psi + B \sin\psi$$
-
-### Iterative Relaxation Loop
-Induced velocity $V_I$ is iteratively solved using fixed-point relaxation:
-
-$$V_{I,\text{new}} = \frac{dT}{4 \pi \rho r V_0 \, dR}, \quad V_I^{(k+1)} = 0.9 \, V_I^{(k)} + 0.1 \, V_{I,\text{new}}$$
-
-### Evaluated Flight Regimes
-The solver resolves 4 operational rotorcraft conditions:
-1. **Hover (Punct fix):** $V_c = 0$, $U = 0$, $\alpha_T = 0^\circ$
-2. **Axial Climb (Urcare):** $V_c = 5\text{ m/s}$, $U = 0$, $\alpha_T = 0^\circ$
-3. **Forward Flight (Zbor orizontal longitudinal):** $V_c = 0$, $U = 10\text{ m/s}$, $\alpha_T = 5^\circ$
-4. **Lateral Control Flight (Comandă laterală):** $V_c = 0$, $U = 5\text{ m/s}$, $\alpha_T = 2^\circ$
+The polygon is a **coursework reference boundary**, not a verified manufacturer CG envelope. These results illustrate the selected mass assumptions and are not an aircraft loading clearance.
 
 <p align="center">
-  <img src="figures/bem_thrust_distribution.png" width="600" alt="BEM Rotor Thrust Distribution">
+  <img src="figures/cg_envelope.svg" width="820" alt="Estimated EC145 mass and centre-of-gravity cases">
 </p>
 
----
+## 2. Blade-element / momentum rotor model
 
-## 3. Flight Performance & Operational Ceiling Engine
+The rotor is divided into 20 radial elements and evaluated at 60 unique azimuth stations. The local lift and drag estimates use blade pitch, relative velocity, and an approximate lift-curve slope; induced velocity is updated by fixed-point relaxation.
 
-### Power Required vs. Power Available
-Total required power in horizontal flight balances induced power, blade profile drag, and fuselage parasitic drag:
+For each strip, the model resolves blade-element forces into axial force and resistive torque. The annular momentum relation includes the four-blade contribution, while azimuthal averaging gives rotor totals.
 
-$$P_{\text{req}} = (1 + k_{\text{res}}) \left[ k_f \lambda_i C_T + \frac{\sigma}{8} C_{D0} (1 + K \mu^2) + \mu \frac{R_D}{mg} C_T \right] \rho \pi R_B^2 V_T^3$$
+The rotor disk area is $A=\pi R^2$ and blade tip speed is $V_{\mathrm{tip}}=\Omega R$. The standard non-dimensional thrust and power coefficients are:
 
-The non-dimensional induced inflow ratio $\lambda_i = r_k \sqrt{C_T/2}$ is solved at each velocity via the quartic Glauert inflow equation:
+$$
+C_T=\frac{T}{\rho A(\Omega R)^2},
+\qquad
+C_P=\frac{P}{\rho A(\Omega R)^3},
+\qquad P=\Omega Q.
+$$
 
-$$p(r) = r^4 + \left(\frac{V}{V_T \sqrt{C_T/2}}\right)^2 r^2 - 1 = 0$$
-
-Available engine power variation with altitude $H$ is computed for the twin-turboshaft powerplant:
-
-$$P_{\text{AV}}(H) = P_{0,\text{max}} \left[ 1.11 \left(\frac{\rho(H)}{\rho_0}\right) - 0.11 \right], \quad \rho(H) = \rho_0 \frac{20000 - H}{20000 + H}$$
+Four prescribed input cases are explored: hover, axial climb, forward flight, and lateral-control flight.
 
 <p align="center">
-  <img src="figures/power_required_available.png" width="48%" alt="Power Curves">
-  <img src="figures/flight_ceiling_envelope.png" width="48%" alt="Flight Ceilings">
+  <img src="figures/bem_thrust_distribution.svg" width="820" alt="Prescribed EC145 rotor-input cases">
 </p>
 
-### Key Performance Capabilities
-* **Vertical Climb Rate ($w_c$):**
+These are **prescribed-control calculations**, not trimmed flight states. For example, the hover-input calculation gives approximately **13.25 kN** of rotor thrust, below the weight of the reference 3,585 kg helicopter. It therefore does not represent equilibrium hover at maximum takeoff mass.
 
-$$w_c = V_T \left[ \frac{(1 - k_{\text{res}}) C_{P,\text{AV}}}{\xi C_T} - \frac{k_f \lambda_i}{\xi} - \frac{\sigma C_{D0}}{8 \xi C_T}(1 + K\mu^2) - \frac{\mu^3 f_A}{2 \xi C_T \pi R_B^2} \right]$$
+## 3. Flight performance and power balance
 
-* **Autorotation Sink Rate ($w_{\text{aut}}$):** Minimum descent velocity computed under total engine power failure ($P_{\text{AV}} = 0$).
-* **Ground Effect (IGE):** Power reduction modeled as a function of rotor height above terrain $H_G$:
+A separate coursework model compares estimated rotor power required with available engine power at reference altitudes from sea level to 6,000 m. The power model includes induced power, blade-profile power, and an equivalent parasite-drag term.
 
-$$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
+The minimum-power speed and the lower/upper power intersections are evaluated on the same forward-speed grid used to calculate the power curves.
 
 <p align="center">
-  <img src="figures/rate_of_climb.png" width="31%" alt="Rate of Climb">
-  <img src="figures/autorotation_descent.png" width="31%" alt="Autorotation">
-  <img src="figures/ground_effect_power.png" width="31%" alt="Ground Effect">
+  <img src="figures/power_required_available.svg" width="49%" alt="Required and available power estimates">
+  <img src="figures/flight_ceiling_envelope.svg" width="49%" alt="Power-limited intersections by altitude">
 </p>
 
----
+The model also gives approximate climb rates, autorotation sink rates, ground-effect power changes, and excess-power acceleration.
 
-## Performance Summary Table
+<p align="center">
+  <img src="figures/rate_of_climb.svg" width="32%" alt="Model climb-rate estimates">
+  <img src="figures/autorotation_descent.svg" width="32%" alt="Model autorotation sink rates">
+  <img src="figures/ground_effect_power.svg" width="32%" alt="Model ground-effect power">
+</p>
 
-| Altitude $H$ [m] | $V_{\min}$ [km/h] | $V_{\text{opt}}$ [km/h] | $V_{\max}$ [km/h] | Max Climb $w_c$ [m/s] | Min Autorotation $w_{\text{aut}}$ [m/s] |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| **0 (SL)** | 0.00 | 144.00 | 258.42 | 10.45 | -8.12 |
-| **1000** | 0.00 | 147.60 | 251.18 | 8.84 | -8.45 |
-| **2000** | 0.00 | 151.20 | 242.80 | 7.15 | -8.82 |
-| **3000** | 0.00 | 154.80 | 232.95 | 5.37 | -9.23 |
-| **4000** | 0.00 | 158.40 | 220.90 | 3.48 | -9.68 |
-| **5000** | 42.15 | 162.00 | 204.60 | 1.46 | -10.19 |
-| **6000** | 88.30 | 165.60 | 179.20 | 0.21 | -10.77 |
+<p align="center">
+  <img src="figures/horizontal_acceleration.svg" width="65%" alt="Excess-power acceleration estimates">
+</p>
 
----
+The calculated intersections indicate where the simplified power curves cross; they are **not approved operating speeds**. Rotor trim, retreating-blade stall, tip Mach effects, and control margins are outside this model. Airbus lists an EC145 C2e never-exceed speed of approximately **145 kt (269 km/h)**; a theoretical power intersection above that limit does not make it an allowable airspeed.
 
-## How to Run
+## Assumptions and scope
 
-1. Clone the repository:
-```bash
-git clone [https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git](https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git)
-cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
-```
+The study applies helicopter aerodynamics and flight-mechanics methods to a reference aircraft. The CG boundaries and component positions are coursework assumptions, the BEM uses prescribed pitch rather than an aircraft trim solver, and the performance calculation uses approximate altitude-dependent engine power and drag relationships.
 
-2. Open MATLAB and ensure all scripts are in the current working directory.
+The original university report includes numerical results from earlier versions of these calculations. This repository presents the revised MATLAB implementations and their corresponding plots, not the complete report.
 
-3. Run the analysis scripts individually:
-```matlab
-run('ec145_weight_and_balance.m');       % CG envelope & loading configurations
-run('ec145_bem_rotor_aerodynamics.m');   % BEM radial/azimuthal aerodynamic distributions
-run('ec145_flight_performance.m');       % Power required/available & flight ceilings
-```
+## Running the scripts
 
----
+Clone or download the repository, open its root directory in MATLAB, and run the scripts separately:
 
-## Academic Context
+~~~matlab
+run('ec145_weight_and_balance.m')
+run('ec145_bem_rotor_aerodynamics.m')
+run('ec145_flight_performance.m')
+~~~
 
-This project was developed within the **Faculty of Aerospace Engineering** at **National University of Science and Technology POLITEHNICA Bucharest** (Specialization: *Aerospace Construction*), integrating theoretical and numerical coursework from:
-* **Helicopter Aerodynamics & Flight Mechanics** (*Elicoptere / Dinamica Elicopterului*)
-* **Rotor Aerodynamics & Blade Element Momentum Theory (BEMT)**
+Each script prints the relevant results and exports updated figures to the figures directory.
 
----
+## Academic background
 
-## Author & Contact
+I developed the MATLAB analyses presented here during the **Elicoptere (Helicopters)** course at the Faculty of Aerospace Engineering, National University of Science and Technology POLITEHNICA Bucharest.
+
+The broader university project also covered helicopter systems, component-mass estimation, aerodynamic derivations, and flight-performance calculations.
+
+## Full project and contact
+
+This repository shares only the computational portion and selected results of the larger university project. If you would like more information about the full coursework report, its derivations, or a particular calculation, feel free to contact me.
 
 **David Irinei**  
-Aerospace Engineering Student – National University of Science and Technology POLITEHNICA Bucharest  
-Specialization: Aerospace Construction (*Construcții Aerospațiale*)  
+Aerospace Engineering student — POLITEHNICA Bucharest  
 Email: [yrydavid@gmail.com](mailto:yrydavid@gmail.com)
+
+### References
+
+- EC145/BK117 C-2 university coursework, Faculty of Aerospace Engineering, POLITEHNICA Bucharest (2026).
+- [NASA, The Wind and Beyond, Vol. III](https://www.nasa.gov/wp-content/uploads/2023/09/the-wind-and-beyond-tagged.pdf) — rotor thrust and power coefficient definitions.
+- [Airbus Helicopters, Aircraft Directory (2025)](https://mediaassets.airbus.com/pm_38_768_768165-cvis3dgol8.pdf) — reference EC145 C2e aircraft data and speed limitations.
