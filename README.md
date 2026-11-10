@@ -183,7 +183,6 @@ run('ec145_flight_performance.m');       % Power required/available & flight cei
 
 This project was developed within the **Faculty of Aerospace Engineering** at **National University of Science and Technology POLITEHNICA Bucharest** (Specialization: *Aerospace Construction*), integrating theoretical and numerical coursework from:
 * **Helicopter Aerodynamics & Flight Mechanics** (*Elicoptere / Dinamica Elicopterului*)
-* **Rotor Aerodynamics & Blade Element Momentum Theory (BEMT)**
 
 ---
 
