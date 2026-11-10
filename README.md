@@ -1,24 +1,23 @@
-# EC145 / BK117 C-2: Rotor Aerodynamics, Stability & Flight Performance Framework
+# EC145 / BK117 C-2 — Rotor Aerodynamics and Flight Performance
 
-An end-to-end computational flight mechanics framework developed in **MATLAB** for the **Airbus Helicopters EC145 (Kawasaki BK117 C-2)** twin-engine light utility helicopter.
+This repository contains MATLAB scripts developed as part of a larger university project on the Eurocopter EC145 / Kawasaki BK117 C-2 helicopter, completed during my Aerospace Engineering studies at POLITEHNICA Bucharest.
 
-The suite models the full aerodynamic and operational flight envelope:
-1. **Weight & Balance & Longitudinal Center of Gravity (CG) Envelope Verification** across 6 operational configurations.
-2. **2D/3D Blade Element Momentum (BEM) Aerodynamic Solver** with cyclic pitch/flapping dynamics and non-linear induced inflow iterative relaxation across 4 flight conditions.
-3. **Comprehensive Flight Performance & Power Balance Engine** evaluating level forward flight, vertical climb capabilities, autorotation sink rates, and ground effect (IGE/OGE) up to service ceiling altitudes ($H = 0 \text{ to } 6000\text{ m}$).
+The project covers helicopter weight and balance, rotor aerodynamics using blade element momentum theory, and flight performance calculations. The MATLAB scripts focus on three areas: longitudinal centre-of-gravity analysis, aerodynamic calculations for four prescribed flight conditions, and flight performance estimates across different altitudes.
+
+These scripts represent the computational portion of the complete university project, which also includes analytical derivations, technical specifications, additional calculations, and discussion of the results.
 
 ---
 
 ## Technical Specifications & Reference Helicopter
 
-The reference parameters modeled reflect the EC145 / BK117 C-2 certification baseline powered by two Turbomeca Arriel 1E2 turboshaft engines:
+The following reference values were used in the university calculations for the twin-engine EC145 / BK117 C-2:
 
 | Parameter | Symbol | Nominal Value | Unit |
 | :--- | :---: | :---: | :---: |
 | Maximum Takeoff Weight (MTOW) | $m_{\text{MTOW}}$ | 3585 | $\text{kg}$ |
 | Empty Weight | $m_{\text{empty}}$ | 1792 | $\text{kg}$ |
 | Main Rotor Radius | $R_B$ | 5.50 | $\text{m}$ |
-| Blade Mean Chord | $c_b$ | 0.32 (Perf) / 0.30 (BEM) | $\text{m}$ |
+| Blade Mean Chord | $c_b$ | 0.32 for performance / 0.30 for rotor analysis | $\text{m}$ |
 | Rotor Rotational Speed | $N_R$ | 383 – 395 | $\text{RPM}$ |
 | Number of Main Rotor Blades | $N_b$ | 4 | $-$ |
 | Rotor Mast Longitudinal Station | $x_{\text{mast}}$ | 4.50 | $\text{m}$ |
@@ -31,11 +30,11 @@ The reference parameters modeled reflect the EC145 / BK117 C-2 certification bas
 
 | File / Directory | Module & Technical Description |
 | :--- | :--- |
-| `ec145_weight_and_balance.m` | **Module 1:** Longitudinal CG envelope & operational loading scenarios |
-| `ec145_bem_rotor_aerodynamics.m` | **Module 2:** Blade Element Momentum (BEM) multi-regime aerodynamic solver |
-| `ec145_flight_performance.m` | **Module 3:** Power balance, flight ceilings, autorotation & ground effect |
-| `figures/` | Directory containing generated MATLAB validation plots and envelopes |
-| `README.md` | Mathematical formulation and engineering documentation |
+| `ec145_weight_and_balance.m` | Longitudinal centre-of-gravity diagram for six coursework loading scenarios |
+| `ec145_bem_rotor_aerodynamics.m` | Rotor aerodynamic calculations for four prescribed flight conditions |
+| `ec145_flight_performance.m` | Power balance, climb, autorotation and ground-effect calculations |
+| `figures/` | Figures from the MATLAB coursework |
+| `README.md` | Project overview, equations and selected results |
 ---
 
 ## 1. Weight & Balance: Longitudinal Center of Gravity Envelope
@@ -45,23 +44,23 @@ The overall center of gravity position is determined by structural moment summat
 
 $$x_{\text{CG}} = \frac{M_{\text{total}}}{m_{\text{total}}} = \frac{m_{\text{empty}} x_{\text{empty}} + \sum_i m_i x_i}{m_{\text{empty}} + \sum_i m_i}$$
 
-The certified flight envelope is bounded by four critical vertices defined in the official Flight Manual:
+The longitudinal CG diagram uses the four reference vertices adopted in the coursework:
 * **Point A:** $(4.377\text{ m}, 3585\text{ kg})$
 * **Point B:** $(4.544\text{ m}, 3585\text{ kg})$
 * **Point C:** $(4.667\text{ m}, 1750\text{ kg})$
 * **Point D:** $(4.337\text{ m}, 2000\text{ kg})$
 
 ### Operational Loading Scenarios
-Six critical mission configurations were evaluated to ensure compliance within structural margins:
+Six loading configurations from the university project are plotted against this reference boundary:
 
-| Scenario ID | Payload Configuration | Fuel State | Mass [kg] | CG Position [m] | In-Envelope Status |
+| Scenario ID | Payload Configuration | Fuel State | Mass [kg] | CG Position [m] | Position in diagram |
 | :--- | :--- | :--- | :---: | :---: | :---: |
-| **Max P, Max F** | 8 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3585** | **4.434** | **COMPLIANT** |
-| **50% P, Max F** | 4 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3260** | **4.474** | **COMPLIANT** |
-| **0 P, Max F** | Pilot Only + Baggage | 100% ($640\text{ kg}$) | **2940** | **4.534** | **COMPLIANT** |
-| **Max P, 0 F** | 8 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2940** | **4.386** | **COMPLIANT** |
-| **50% P, 0 F** | 4 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2620** | **4.441** | **COMPLIANT** |
-| **0 P, 0 F** | Pilot Only + Baggage | Reserve ($0\text{ kg}$) | **2300** | **4.516** | **COMPLIANT** |
+| **Max P, Max F** | 8 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3585** | **4.434** | **Inside** |
+| **50% P, Max F** | 4 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3260** | **4.474** | **Inside** |
+| **0 P, Max F** | Pilot Only + Baggage | 100% ($640\text{ kg}$) | **2940** | **4.534** | **Inside** |
+| **Max P, 0 F** | 8 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2940** | **4.386** | **Inside** |
+| **50% P, 0 F** | 4 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2620** | **4.441** | **Inside** |
+| **0 P, 0 F** | Pilot Only + Baggage | Reserve ($0\text{ kg}$) | **2300** | **4.516** | **Inside** |
 
 <p align="center">
   <img src="figures/cg_envelope.png" width="750" alt="EC145 Longitudinal CG Envelope">
@@ -69,7 +68,7 @@ Six critical mission configurations were evaluated to ensure compliance within s
 
 ---
 
-## 2. Rotor Aerodynamics: Blade Element Momentum (BEM) Solver
+## 2. Rotor Aerodynamics
 
 The aerodynamic environment across the rotor disk is resolved by coupling 2D blade element strip theory with momentum conservation along differential annular rings of spanwise width $dR$.
 
@@ -96,7 +95,7 @@ Induced velocity $V_I$ is iteratively solved using fixed-point relaxation:
 $$V_{I,\text{new}} = \frac{dT}{4 \pi \rho r V_0 \, dR}, \quad V_I^{(k+1)} = 0.9 \, V_I^{(k)} + 0.1 \, V_{I,\text{new}}$$
 
 ### Evaluated Flight Regimes
-The solver resolves 4 operational rotorcraft conditions:
+The script evaluates four prescribed flight conditions:
 1. **Hover (Punct fix):** $V_c = 0$, $U = 0$, $\alpha_T = 0^\circ$
 2. **Axial Climb (Urcare):** $V_c = 5\text{ m/s}$, $U = 0$, $\alpha_T = 0^\circ$
 3. **Forward Flight (Zbor orizontal longitudinal):** $V_c = 0$, $U = 10\text{ m/s}$, $\alpha_T = 5^\circ$
@@ -108,7 +107,7 @@ The solver resolves 4 operational rotorcraft conditions:
 
 ---
 
-## 3. Flight Performance & Operational Ceiling Engine
+## 3. Flight Performance and Power Balance
 
 ### Power Required vs. Power Available
 Total required power in horizontal flight balances induced power, blade profile drag, and fuselage parasitic drag:
@@ -146,7 +145,7 @@ $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
 
 ---
 
-## Performance Summary Table
+## Flight Performance Results from the Coursework
 
 | Altitude $H$ [m] | $V_{\min}$ [km/h] | $V_{\text{opt}}$ [km/h] | $V_{\max}$ [km/h] | Max Climb $w_c$ [m/s] | Min Autorotation $w_{\text{aut}}$ [m/s] |
 | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -164,7 +163,7 @@ $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
 
 1. Clone the repository:
 ```bash
-git clone [https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git](https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git)
+git clone https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Performance.git
 cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
 ```
 
@@ -181,14 +180,19 @@ run('ec145_flight_performance.m');       % Power required/available & flight cei
 
 ## Academic Context
 
-This project was developed within the **Faculty of Aerospace Engineering** at **National University of Science and Technology POLITEHNICA Bucharest** (Specialization: *Aerospace Construction*), integrating theoretical and numerical coursework from:
-* **Helicopter Aerodynamics & Flight Mechanics** (*Elicoptere / Dinamica Elicopterului*)
+This project was developed during the *Elicoptere (Helicopters)* course at the Faculty of Aerospace Engineering, National University of Science and Technology POLITEHNICA Bucharest, as part of my Aerospace Engineering studies.
+
+The coursework involved applying theoretical and numerical methods to helicopter aerodynamics, mass and balance, and flight performance, using the EC145 / BK117 C-2 as the reference aircraft.
 
 ---
 
-## Author & Contact
+## Full Project and Contact
+
+This repository contains selected MATLAB scripts and figures from the complete university project. The full report includes additional analytical calculations, derivations, and technical discussions that are not reproduced here.
+
+If you are interested in the complete project or would like further details about the methodology and results, feel free to contact me.
 
 **David Irinei**  
-Aerospace Engineering Student – National University of Science and Technology POLITEHNICA Bucharest  
-Specialization: Aerospace Construction (*Construcții Aerospațiale*)  
+Aerospace Engineering Student  
+National University of Science and Technology POLITEHNICA Bucharest  
 Email: [yrydavid@gmail.com](mailto:yrydavid@gmail.com)
