@@ -1,91 +1,91 @@
-%% EC145/BK117 C-2: estimated longitudinal mass and CG
-% Recomputes the six coursework payload cases from reported masses/arms.
-% Envelope vertices are illustrative course inputs, not a certified
-% flight-manual envelope. Some scenarios may lie outside this polygon.
+% =========================================================================
+% Elicopter EC145 / BK117 C-2 - Anvelopa de Centraj Longitudinal (Figura 21)
+% Autor: Irinei David
+% =========================================================================
+
 clear; clc; close all;
 
-g = 9.81;
-emptyMass = 1792;                % Coursework empty mass [kg]
-emptyMoment = 76468.46/g;       % Empty moment from Table 11 [kg m]
-rotorAxis = 4.50;                % Datum station of main rotor [m]
+%% 1. Geometrie de Referință și Limite Anvelopă (Punctele A, B, C, D)
+rotor_axis = 4.50; % [m] Axa rotorului principal
 
-% [CG station (m), gross mass (kg)]: idealized coursework polygon
-envCG   = [4.337,4.377,4.544,4.667,4.337];
-envMass = [2000, 3585, 3585, 1750, 2000];
+% Coordonatele anvelopei de centraj oficiale (D -> A -> B -> C -> D)
+env_cg   = [4.337, 4.377, 4.544, 4.667, 4.337];
+env_mass = [2000,  3585,  3585,  1750,  2000];
 
-% Scenario inputs from Tables 12-17 of the university report:
-% [passengers row 1, row 2, row 3, fuel mass], all in kg.
-cases = [ ...
-      0    0    0   640;  % No passengers, full fuel
-      0  160   80   640;  % Partial passengers, full fuel
-     80  160  240   640;  % Maximum passengers, full fuel
-      0    0    0     0;  % No passengers, no fuel
-      0  160   80     0;  % Partial passengers, no fuel
-     80  160  240     0];% Maximum passengers, no fuel
+%% 2. Datele Punctelor de Verificare (Tabelele 12 - 17 & Figura 21)
+% Nume, CG [m], Masa [kg], Marker, Culoare Marker
+puncte = {
+    '0P, Max F',    4.534, 2940, 'o', [0.00, 0.45, 0.74];  % Albastru
+    '50%P, Max F',  4.474, 3260, 's', [0.85, 0.33, 0.10];  % Portocaliu
+    'Max P, Max F', 4.434, 3585, 'd', [0.93, 0.69, 0.13];  % Galben / Aur
+    '0P, 0F',       4.516, 2300, '^', [0.49, 0.18, 0.56];  % Mov
+    '50%P, 0F',     4.441, 2620, 'v', [0.47, 0.67, 0.19];  % Verde
+    'Max P, 0F',    4.386, 2940, 'p', [0.30, 0.75, 0.93];  % Bleu (Stea)
+};
 
-caseNames = { ...
-    '0 passengers, full fuel'; ...
-    'Partial passengers, full fuel'; ...
-    'Max passengers, full fuel'; ...
-    '0 passengers, no fuel'; ...
-    'Partial passengers, no fuel'; ...
-    'Max passengers, no fuel'};
-paxArms = [3.30,3.95,4.10];     % Passenger positions [m]
-pilotMass = 80; pilotArm = 2.85;
-baggageMass = 70; baggageArm = 5.55;
-fuelArm = 4.60;
+%% 3. Reprezentare Grafică (Figura 21 din Proiect)
+figure('Color', 'w', 'Position', [100, 100, 950, 600]);
 
-nCases = size(cases,1);
-totalMass = zeros(nCases,1);
-xCG = zeros(nCases,1);
-isWithin = false(nCases,1);
-for i = 1:nCases
-    passengers = cases(i,1:3);
-    fuelMass = cases(i,4);
-    totalMass(i) = emptyMass+pilotMass+baggageMass ...
-                   +sum(passengers)+fuelMass;
-    moment = emptyMoment+pilotMass*pilotArm ...
-           +baggageMass*baggageArm ...
-           +sum(passengers.*paxArms)+fuelMass*fuelArm;
-    xCG(i) = moment/totalMass(i);
-    [in,on] = inpolygon(xCG(i),totalMass(i),envCG,envMass);
-    isWithin(i) = in | on;
-end
-
-fprintf('EC145 load cases recomputed from university report tables\n');
-fprintf('These are not the manually specified Figure 21 point coordinates.\n');
-for i = 1:nCases
-    fprintf('%-30s : %5.0f kg, xCG = %.4f m, inside course polygon = %d\n', ...
-        caseNames{i},totalMass(i),xCG(i),isWithin(i));
-end
-
-fig = figure('Color','w','Position',[100 100 1050 650]);
+% A. Suprafața și conturul anvelopei
+h_env = fill(env_cg, env_mass, [1.0, 0.92, 0.92], ...
+             'EdgeColor', 'r', 'LineWidth', 2.5, ...
+             'DisplayName', 'Anvelopa EC145');
 hold on;
-fill(envCG,envMass,[0.94 0.95 0.98], ...
-    'EdgeColor',[0.35 0.45 0.65],'LineWidth',1.8, ...
-    'DisplayName','Coursework reference polygon');
-xline(rotorAxis,'k--','LineWidth',1.3,'DisplayName','Rotor axis');
-colors = lines(nCases);
-for i = 1:nCases
-    if isWithin(i)
-        marker = 'o';
-    else
-        marker = 'x';
-    end
-    plot(xCG(i),totalMass(i),marker,'Color',colors(i,:), ...
-        'MarkerSize',9,'LineWidth',1.6, ...
-        'DisplayName',caseNames{i});
-    text(xCG(i)+0.007,totalMass(i), ...
-        sprintf('%.3f m, %.0f kg',xCG(i),totalMass(i)), ...
-        'FontSize',8);
-end
-grid on;
-xlabel('Longitudinal CG station [m]');
-ylabel('Gross mass [kg]');
-title('EC145 - estimated CG from coursework mass inputs');
-xlim([4.18 4.72]); ylim([1700 3700]);
-legend('Location','eastoutside');
-hold off;
 
-if ~exist('figures','dir'), mkdir('figures'); end
-exportgraphics(fig,fullfile('figures','cg_envelope.svg'),'ContentType','vector');
+% B. Axa rotorului
+h_rotor = xline(rotor_axis, '--k', 'LineWidth', 1.5, ...
+                'DisplayName', 'Axa rotorului (4.50 m)');
+
+% C. Plotarea fiecărui punct de verificare și a etichetelor
+h_pts = gobjects(size(puncte, 1), 1);
+
+for i = 1:size(puncte, 1)
+    eticheta = puncte{i, 1};
+    x_val    = puncte{i, 2};
+    y_val    = puncte{i, 3};
+    marker   = puncte{i, 4};
+    culoare  = puncte{i, 5};
+    
+    % Plotare marker
+    h_pts(i) = plot(x_val, y_val, marker, ...
+                    'MarkerSize', 8, ...
+                    'MarkerFaceColor', culoare, ...
+                    'MarkerEdgeColor', 'k', ...
+                    'DisplayName', eticheta);
+    
+    % Căsuță text informativă (Callout cu fundal alb)
+    text_str = sprintf('%s\n(%.3f m, %.0f kg)', eticheta, x_val, y_val);
+    
+    % Poziționare inteligentă a etichetelor pentru a evita suprapunerea
+    offset_x = 0.006;
+    offset_y = 0;
+    if strcmp(eticheta, 'Max P, Max F')
+        offset_x = 0.005; offset_y = -30;
+    elseif strcmp(eticheta, '0P, Max F')
+        offset_x = 0.006; offset_y = -20;
+    elseif strcmp(eticheta, '0P, 0F')
+        offset_x = 0.006; offset_y = -20;
+    end
+    
+    text(x_val + offset_x, y_val + offset_y, text_str, ...
+         'FontSize', 8, ...
+         'BackgroundColor', [1 1 1 0.85], ...
+         'EdgeColor', [0.75 0.75 0.75], ...
+         'Margin', 2);
+end
+
+%% 4. Formatare Axe și Legendă (Conform Figurii 21)
+grid on;
+box on;
+
+xlabel('POZITIA CG [m]', 'FontWeight', 'normal');
+ylabel('MASA TOTALA [kg]', 'FontWeight', 'normal');
+title('ANVELOPA DE CENTRAJ LONGITUDINAL - EC145', 'FontWeight', 'bold');
+
+xlim([4.3 4.7]);
+ylim([1750 3650]);
+set(gca, 'XTick', 4.3:0.05:4.7);
+set(gca, 'YTick', 1800:200:3600);
+
+% Legendă cu toate cele 8 elemente
+legend([h_env, h_rotor, h_pts'], 'Location', 'northeastoutside');
