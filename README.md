@@ -4,7 +4,7 @@ This repository contains MATLAB scripts developed as part of a larger university
 
 The project covers helicopter weight and balance, rotor aerodynamics using blade element momentum theory, and flight performance calculations. The MATLAB scripts focus on three areas: longitudinal centre-of-gravity analysis, aerodynamic calculations for four prescribed flight conditions, and flight performance estimates across different altitudes.
 
-These scripts represent the computational portion of the complete university project, which also includes analytical derivations, technical specifications, additional calculations, and discussion of the results.
+These scripts represent the computational portion of the complete university project, which also includes analytical derivations, technical specifications, additional calculations, and discussion of the results. The code published here includes a few numerical and plotting corrections made after the original course submission.
 
 ---
 
@@ -14,8 +14,8 @@ The following reference values were used in the university calculations for the 
 
 | Parameter | Symbol | Nominal Value | Unit |
 | :--- | :---: | :---: | :---: |
-| Maximum Takeoff Weight (MTOW) | $m_{\text{MTOW}}$ | 3585 | $\text{kg}$ |
-| Empty Weight | $m_{\text{empty}}$ | 1792 | $\text{kg}$ |
+| Maximum Takeoff Mass | $m_{\text{MTOW}}$ | 3585 | $\text{kg}$ |
+| Empty Mass | $m_{\text{empty}}$ | 1792 | $\text{kg}$ |
 | Main Rotor Radius | $R_B$ | 5.50 | $\text{m}$ |
 | Blade Mean Chord | $c_b$ | 0.32 for performance / 0.30 for rotor analysis | $\text{m}$ |
 | Rotor Rotational Speed | $N_R$ | 383 – 395 | $\text{RPM}$ |
@@ -33,34 +33,34 @@ The following reference values were used in the university calculations for the 
 | `ec145_weight_and_balance.m` | Longitudinal centre-of-gravity diagram for six coursework loading scenarios |
 | `ec145_bem_rotor_aerodynamics.m` | Rotor aerodynamic calculations for four prescribed flight conditions |
 | `ec145_flight_performance.m` | Power balance, climb, autorotation and ground-effect calculations |
-| `figures/` | Figures from the MATLAB coursework |
+| `figures/` | MATLAB plots illustrating the coursework calculations |
 | `README.md` | Project overview, equations and selected results |
 ---
 
 ## 1. Weight & Balance: Longitudinal Center of Gravity Envelope
 
 ### Formulation
-The overall center of gravity position is determined by structural moment summation relative to the forward datum:
+The complete university report estimates the longitudinal centre of gravity by summing component mass moments about the chosen datum:
 
-$$x_{\text{CG}} = \frac{M_{\text{total}}}{m_{\text{total}}} = \frac{m_{\text{empty}} x_{\text{empty}} + \sum_i m_i x_i}{m_{\text{empty}} + \sum_i m_i}$$
+$x_{\text{CG}} = \frac{m_{\text{empty}} x_{\text{empty}} + \sum_i m_i x_i}{m_{\text{empty}} + \sum_i m_i}$
 
-The longitudinal CG diagram uses the four reference vertices adopted in the coursework:
+The MATLAB script reproduces the six loading points and four boundary vertices used in the original coursework figure. This is a course reference diagram, not an independently verified manufacturer loading envelope:
 * **Point A:** $(4.377\text{ m}, 3585\text{ kg})$
 * **Point B:** $(4.544\text{ m}, 3585\text{ kg})$
 * **Point C:** $(4.667\text{ m}, 1750\text{ kg})$
 * **Point D:** $(4.337\text{ m}, 2000\text{ kg})$
 
 ### Operational Loading Scenarios
-Six loading configurations from the university project are plotted against this reference boundary:
+The script plots the following prescribed loading configurations; the underlying mass and moment calculations are documented in the complete report:
 
-| Scenario ID | Payload Configuration | Fuel State | Mass [kg] | CG Position [m] | Position in diagram |
+| Scenario ID | Payload Configuration | Fuel State | Mass [kg] | CG Position [m] | Plot position |
 | :--- | :--- | :--- | :---: | :---: | :---: |
-| **Max P, Max F** | 8 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3585** | **4.434** | **Inside** |
+| **Max P, Max F** | 8 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3585** | **4.434** | **Upper boundary** |
 | **50% P, Max F** | 4 Pax + Pilot + Baggage | 100% ($640\text{ kg}$) | **3260** | **4.474** | **Inside** |
 | **0 P, Max F** | Pilot Only + Baggage | 100% ($640\text{ kg}$) | **2940** | **4.534** | **Inside** |
-| **Max P, 0 F** | 8 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2940** | **4.386** | **Inside** |
-| **50% P, 0 F** | 4 Pax + Pilot + Baggage | Reserve ($0\text{ kg}$) | **2620** | **4.441** | **Inside** |
-| **0 P, 0 F** | Pilot Only + Baggage | Reserve ($0\text{ kg}$) | **2300** | **4.516** | **Inside** |
+| **Max P, 0 F** | 8 Pax + Pilot + Baggage | No fuel ($0\text{ kg}$) | **2940** | **4.386** | **Inside** |
+| **50% P, 0 F** | 4 Pax + Pilot + Baggage | No fuel ($0\text{ kg}$) | **2620** | **4.441** | **Inside** |
+| **0 P, 0 F** | Pilot Only + Baggage | No fuel ($0\text{ kg}$) | **2300** | **4.516** | **Inside** |
 
 <p align="center">
   <img src="figures/cg_envelope.png" width="750" alt="EC145 Longitudinal CG Envelope">
@@ -70,7 +70,7 @@ Six loading configurations from the university project are plotted against this 
 
 ## 2. Rotor Aerodynamics
 
-The aerodynamic environment across the rotor disk is resolved by coupling 2D blade element strip theory with momentum conservation along differential annular rings of spanwise width $dR$.
+The script combines blade-element force calculations with an approximate annular momentum balance. The four prescribed pitch and flight cases use 20 radial elements and 60 distinct azimuth stations; results are averaged over azimuth and combined across the four blades.
 
 ### Velocity Components & Local Aerodynamics
 For any blade station at radial coordinate $r$ and azimuth $\psi$:
@@ -92,7 +92,13 @@ $$\theta_{\text{pitch}}(\psi) = C + A \cos\psi + B \sin\psi$$
 ### Iterative Relaxation Loop
 Induced velocity $V_I$ is iteratively solved using fixed-point relaxation:
 
-$$V_{I,\text{new}} = \frac{dT}{4 \pi \rho r V_0 \, dR}, \quad V_I^{(k+1)} = 0.9 \, V_I^{(k)} + 0.1 \, V_{I,\text{new}}$$
+$V_{I,\text{new}} = \frac{N_b\,dT}{4 \pi \rho r V_0 \, dR}, \quad V_I^{(k+1)} = 0.9 \, V_I^{(k)} + 0.1 \, V_{I,\text{new}}$
+
+Elemental thrust and resistive torque use the force components normal and tangential to the rotor disk:
+
+$dT=dL\cos\phi-dD\sin\phi,\qquad dQ=r(dL\sin\phi+dD\cos\phi)$
+
+The rotor-level thrust and power coefficients are $C_T=T/(\rho A V_T^2)$ and $C_P=P/(\rho A V_T^3)$, where $A=\pi R_B^2$ and $P=\Omega Q$. These calculations use prescribed inputs; no rotor trim procedure is performed.
 
 ### Evaluated Flight Regimes
 The script evaluates four prescribed flight conditions:
@@ -127,12 +133,12 @@ $$P_{\text{AV}}(H) = P_{0,\text{max}} \left[ 1.11 \left(\frac{\rho(H)}{\rho_0}\r
   <img src="figures/flight_ceiling_envelope.png" width="48%" alt="Flight Ceilings">
 </p>
 
-### Key Performance Capabilities
+### Additional Performance Estimates
 * **Vertical Climb Rate ($w_c$):**
 
 $$w_c = V_T \left[ \frac{(1 - k_{\text{res}}) C_{P,\text{AV}}}{\xi C_T} - \frac{k_f \lambda_i}{\xi} - \frac{\sigma C_{D0}}{8 \xi C_T}(1 + K\mu^2) - \frac{\mu^3 f_A}{2 \xi C_T \pi R_B^2} \right]$$
 
-* **Autorotation Sink Rate ($w_{\text{aut}}$):** Minimum descent velocity computed under total engine power failure ($P_{\text{AV}} = 0$).
+* **Autorotation Sink Rate ($w_{\text{aut}}$):** An approximate zero-engine-power descent estimate within the coursework model.
 * **Ground Effect (IGE):** Power reduction modeled as a function of rotor height above terrain $H_G$:
 
 $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
@@ -143,19 +149,27 @@ $$\xi_G = 1 - \frac{0.5}{1 + 4 \left(H_G / R_B\right)^2}$$
   <img src="figures/ground_effect_power.png" width="31%" alt="Ground Effect">
 </p>
 
+<p align="center">
+  <img src="figures/horizontal_acceleration.png" width="65%" alt="Excess-power acceleration estimate">
+</p>
+
 ---
 
-## Flight Performance Results from the Coursework
+## Flight Performance Results
 
-| Altitude $H$ [m] | $V_{\min}$ [km/h] | $V_{\text{opt}}$ [km/h] | $V_{\max}$ [km/h] | Max Climb $w_c$ [m/s] | Min Autorotation $w_{\text{aut}}$ [m/s] |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| **0 (SL)** | 0.00 | 144.00 | 258.42 | 10.45 | -8.12 |
-| **1000** | 0.00 | 147.60 | 251.18 | 8.84 | -8.45 |
-| **2000** | 0.00 | 151.20 | 242.80 | 7.15 | -8.82 |
-| **3000** | 0.00 | 154.80 | 232.95 | 5.37 | -9.23 |
-| **4000** | 0.00 | 158.40 | 220.90 | 3.48 | -9.68 |
-| **5000** | 42.15 | 162.00 | 204.60 | 1.46 | -10.19 |
-| **6000** | 88.30 | 165.60 | 179.20 | 0.21 | -10.77 |
+The table summarizes estimates from the power-balance model with the forward-speed grid aligned to the corresponding power calculations. The upper power intersection is a mathematical result of this simplified model, **not** the helicopter's permitted maximum operating speed.
+
+| Altitude [m] | Lower power intersection [km/h] | Minimum-power speed [km/h] | Upper power intersection [km/h] | Maximum model climb rate [m/s] | Least-negative model sink rate [m/s] |
+| :---: | ---: | ---: | ---: | ---: | ---: |
+| 0 | 0.00 | 144.00 | 366.24 | 16.33 | −9.42 |
+| 1000 | 0.00 | 151.20 | 361.81 | 13.73 | −9.42 |
+| 2000 | 0.00 | 158.40 | 355.39 | 11.23 | −9.59 |
+| 3000 | 0.00 | 165.60 | 346.09 | 8.78 | −9.93 |
+| 4000 | 46.77 | 176.40 | 332.32 | 6.36 | −10.45 |
+| 5000 | 79.22 | 183.60 | 310.85 | 3.92 | −11.17 |
+| 6000 | 124.59 | 194.40 | 271.74 | 1.43 | −12.11 |
+
+The numerical values differ slightly from the table in the original university report because the speed indexing has been corrected. The complete report preserves the results as originally submitted.
 
 ---
 
@@ -167,12 +181,12 @@ git clone https://github.com/yrydavid/EC145-Rotorcraft-Aerodynamics-Flight-Perfo
 cd EC145-Rotorcraft-Aerodynamics-Flight-Performance
 ```
 
-2. Open MATLAB and ensure all scripts are in the current working directory.
+2. Open MATLAB with this repository as the current working directory.
 
-3. Run the analysis scripts individually:
+3. Run the analysis scripts individually. The scripts export PNG figures into `figures/`:
 ```matlab
 run('ec145_weight_and_balance.m');       % CG envelope & loading configurations
-run('ec145_bem_rotor_aerodynamics.m');   % BEM radial/azimuthal aerodynamic distributions
+run('ec145_bem_rotor_aerodynamics.m');   % Rotor aerodynamic distributions
 run('ec145_flight_performance.m');       % Power required/available & flight ceilings
 ```
 
@@ -188,7 +202,7 @@ The coursework involved applying theoretical and numerical methods to helicopter
 
 ## Full Project and Contact
 
-This repository contains selected MATLAB scripts and figures from the complete university project. The full report includes additional analytical calculations, derivations, and technical discussions that are not reproduced here.
+This repository contains selected MATLAB scripts and figures from the complete university project. The GitHub code includes a few corrections made after the classroom submission; the original report, analytical derivations and further technical discussion remain available on request.
 
 If you are interested in the complete project or would like further details about the methodology and results, feel free to contact me.
 

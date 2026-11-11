@@ -20,11 +20,11 @@ CD0 = 0.01;        % coeficient rezistenta la incidenta nula [-]
 lambda = (RB - R0)/CB; 
 CL_alpha = (5.5*pi*lambda)/(5.5 + pi*lambda); 
  
-sigma = (NB*CB*(RB-R0))/(pi*(RB-R0)^2); 
+% Rotor totals use blade count and average azimuthal contributions. 
  
-n_psi = 61; 
+n_psi = 60; % unique azimuth stations; 360 degrees repeats 0 degrees 
 n_r = 20;
-dR = (RB - R0)/(n_r - 1); 
+dR = (RB - R0)/n_r; % equal-width radial elements 
  
 %% CAZURI CERUTE 
  
@@ -43,7 +43,10 @@ A_all = [0 0 5 2];
 B_all = [0 0 0 2]; 
 C_all = [1 5 2 2]; 
  
-%% RULARE PENTRU TOATE CAZURILE 
+%% RULARE PENTRU TOATE CAZURILE
+showDetailedFigures = false; % Set to true to display the original detailed plots
+figSummary = figure('Color','w','Position',[80 80 1050 800]);
+summaryLayout = tiledlayout(figSummary,2,2,'TileSpacing','compact','Padding','compact'); 
  
 for caz = 1:4 
  
@@ -87,7 +90,7 @@ for caz = 1:4
     for i = 1:n_psi 
  
         %% Se calculeaza psi_i 
-        psi(i) = (i-1)*360/(n_psi-1); 
+        psi(i) = (i-1)*360/n_psi; 
  
         %% c) For j = 1:n_r 
  
@@ -95,7 +98,7 @@ for caz = 1:4
  
             %% Se calculeaza R(j), x(i,j), y(i,j), Beta(i,j), Theta(i,j) 
  
-            R(j) = R0 + (j-1)*(RB-R0)/(n_r-1); 
+            R(j) = R0 + (j-0.5)*dR; % midpoint location 
  
             x(i,j) = R(j)*cosd(psi(i)); 
             y(i,j) = R(j)*sind(psi(i)); 
@@ -138,12 +141,12 @@ for caz = 1:4
                           dD(i,j)*sind(phi(i,j)); 
  
                 dQ(i,j) = R(j)*( ... 
-                         -dL(i,j)*sind(phi(i,j)) + ... 
+                         +dL(i,j)*sind(phi(i,j)) + ... 
                           dD(i,j)*cosd(phi(i,j)) ); 
  
                 dP(i,j) = NR*2*pi*dQ(i,j)/60; 
  
-                new_V_I = dT(i,j)/(4*pi*ro*R(j)*max(V0(i,j),0.001)*dR); 
+                new_V_I = NB*dT(i,j)/(4*pi*ro*R(j)*max(V0(i,j),0.001)*dR); 
  
                 %% f) if abs(new_V_I - V_I(i,j)) < 1.0e-2 
  
@@ -187,13 +190,15 @@ for caz = 1:4
     %% l) end for i 
     %% Se calculeaza T_a, Q_a, P_a, Ct_a, Cq_a si Cp_a 
  
-    T_a = sigma*sum(T); 
-    Q_a = sigma*sum(Q); 
-    P_a = sigma*sum(P); 
+    T_a = NB*mean(T); 
+    Q_a = NB*mean(Q); 
+    P_a = NB*mean(P); 
  
-    Ct_a = T_a/(0.5*ro*(NR*2*pi/60*RB)^2*NB*CB*(RB-R0)); 
-    Cq_a = Q_a/(0.5*ro*(NR*2*pi/60*RB)^2*RB*NB*CB*(RB-R0)); 
-    Cp_a = P_a/(0.5*ro*(NR*2*pi/60*RB)^2*NB*CB*(RB-R0)); 
+    V_tip = (NR*2*pi/60)*RB;
+    A_rotor = pi*RB^2;
+    Ct_a = T_a/(ro*A_rotor*V_tip^2);
+    Cq_a = Q_a/(ro*A_rotor*RB*V_tip^2);
+    Cp_a = P_a/(ro*A_rotor*V_tip^3); 
  
     fprintf('\n==============================\n'); 
     fprintf('CAZ %d: %s\n', caz, nume_caz{caz}); 
@@ -204,6 +209,16 @@ for caz = 1:4
     fprintf('Cq_a = %.6f\n', Cq_a); 
     fprintf('Cp_a = %.6f\n', Cp_a); 
  
+    % Summary of blade-element thrust in each prescribed case.
+    ax = nexttile(summaryLayout);
+    surf(ax,x,y,dT,'EdgeColor','none');
+    view(ax,2);
+    axis(ax,'equal');
+    xlabel(ax,'x [m]'); ylabel(ax,'y [m]');
+    title(ax,nume_caz{caz});
+    colorbar(ax);
+
+    if showDetailedFigures
     %% Se prezinta grafic variatiile T, Q si P cu unghiul psi 
  
     figure; 
@@ -248,4 +263,11 @@ for caz = 1:4
  
     end 
  
+    end
+
 end
+
+% Export the overview figure; retain the original detailed figures as an option.
+figDir = fullfile(fileparts(mfilename('fullpath')),'figures');
+if ~exist(figDir,'dir'), mkdir(figDir); end
+exportgraphics(figSummary,fullfile(figDir,'bem_thrust_distribution.png'),'Resolution',200);

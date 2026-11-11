@@ -8,7 +8,7 @@ clear; clc; close all;
 %% 1. Geometrie de Referință și Limite Anvelopă (Punctele A, B, C, D)
 rotor_axis = 4.50; % [m] Axa rotorului principal
 
-% Coordonatele anvelopei de centraj oficiale (D -> A -> B -> C -> D)
+% Coordonatele anvelopei folosite in tema de curs (D -> A -> B -> C -> D)
 env_cg   = [4.337, 4.377, 4.544, 4.667, 4.337];
 env_mass = [2000,  3585,  3585,  1750,  2000];
 
@@ -24,7 +24,7 @@ puncte = {
 };
 
 %% 3. Reprezentare Grafică (Figura 21 din Proiect)
-figure('Color', 'w', 'Position', [100, 100, 950, 600]);
+figCG = figure('Color', 'w', 'Position', [100, 100, 950, 600]);
 
 % A. Suprafața și conturul anvelopei
 h_env = fill(env_cg, env_mass, [1.0, 0.92, 0.92], ...
@@ -69,7 +69,7 @@ for i = 1:size(puncte, 1)
     
     text(x_val + offset_x, y_val + offset_y, text_str, ...
          'FontSize', 8, ...
-         'BackgroundColor', [1 1 1 0.85], ...
+         'BackgroundColor', [1 1 1], ...
          'EdgeColor', [0.75 0.75 0.75], ...
          'Margin', 2);
 end
@@ -89,3 +89,7 @@ set(gca, 'YTick', 1800:200:3600);
 
 % Legendă cu toate cele 8 elemente
 legend([h_env, h_rotor, h_pts'], 'Location', 'northeastoutside');
+% Save the original coursework loading-case diagram.
+figDir = fullfile(fileparts(mfilename('fullpath')),'figures');
+if ~exist(figDir,'dir'), mkdir(figDir); end
+exportgraphics(figCG,fullfile(figDir,'cg_envelope.png'),'Resolution',200);
