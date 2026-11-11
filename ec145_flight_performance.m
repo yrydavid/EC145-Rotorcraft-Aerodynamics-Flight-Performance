@@ -119,7 +119,7 @@ colors = jet(length(H));
 for i=1:length(H) 
     figure(1); hold on 
     plot(V_plot*3.6,P(i,:)/1000,'linewidth',1.5,'color',colors(i,:)) 
-    plot(V_plot*3.6,ones(1,length(V_plot))*P_AV(i)/1000,'linewidth',1.5,'color',colors(i,:))
+    plot(V_plot*3.6,ones(1,length(V_plot))*P_AV(i)/1000,'--','linewidth',1.3,'color',colors(i,:))
     figure(2); hold on 
 plot(V_plot*3.6,w_c(i,:),'linewidth',1.5,'color',colors(i,:)) 
 figure(3); hold on 
@@ -138,14 +138,19 @@ plot(V*3.6,a_h(1,2:end))
 plot(V*3.6,a_h(2,2:end)) 
 figure(1); 
 grid on; grid minor; 
-xlabel('V [km/h]'); ylabel('Power [kW]') 
+xlabel('V [km/h]'); ylabel('Power [kW]')
+% Line style distinguishes required and available power; colors mark altitude.
+hRequired = plot(nan,nan,'k-','LineWidth',1.5);
+hAvailable = plot(nan,nan,'k--','LineWidth',1.3);
+legend([hRequired,hAvailable],{'Power required','Power available'}, ...
+    'Location','northeast'); 
 xlim([0 380]) 
 figure(2); 
 grid on; grid minor; 
 xlabel('V [km/h]'); ylabel('Climb rate [m/s]'); ylim([-10 18]) 
 figure(3); 
 grid on; grid minor; 
-xlabel('V [km/h]'); ylabel('w_a_u_t [m/s]'); ylim([-22 0]) 
+ylabel('Autorotation vertical speed [m/s]'); xlabel('V [km/h]'); ylim([-30 0]) 
 figure(4); 
 grid on; grid minor; 
 xlabel('V [km/h]'); ylabel('H [m]'); legend('Vmin', 'Vmax','Vopt') 
