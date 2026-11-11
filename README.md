@@ -117,7 +117,7 @@ The script evaluates four prescribed flight conditions:
 4. **Lateral Control Flight (Comandă laterală):** $V_c = 0$, $U = 5\text{ m/s}$, $\alpha_T = 2^\circ$
 
 <p align="center">
-  <img src="figures/bem_thrust_distribution.png" width="600" alt="BEM Rotor Thrust Distribution">
+  <img src="figures/bem_thrust_distribution.png?v=3c204ea" width="600" alt="BEM Rotor Thrust Distribution">
 </p>
 
 ---
