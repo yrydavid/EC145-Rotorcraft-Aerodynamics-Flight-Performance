@@ -211,12 +211,18 @@ for caz = 1:4
  
     % Summary of blade-element thrust in each prescribed case.
     ax = nexttile(summaryLayout);
-    surf(ax,x,y,dT,'EdgeColor','none');
+    % Close the angular seam only in the plot; the numerical integration
+    % keeps 60 distinct azimuths and does not duplicate the 360-degree point.
+    xPlot = [x; x(1,:)];
+    yPlot = [y; y(1,:)];
+    dTPlot = [dT; dT(1,:)];
+    surf(ax,xPlot,yPlot,dTPlot,'EdgeColor','none');
     view(ax,2);
     axis(ax,'equal');
     xlabel(ax,'x [m]'); ylabel(ax,'y [m]');
     title(ax,nume_caz{caz});
-    colorbar(ax);
+    cb = colorbar(ax);
+    cb.Label.String = 'Elemental thrust dT [N]';
 
     if showDetailedFigures
     %% Se prezinta grafic variatiile T, Q si P cu unghiul psi 

@@ -42,7 +42,11 @@ The following reference values were used in the university calculations for the 
 ### Formulation
 The complete university report estimates the longitudinal centre of gravity by summing component mass moments about the chosen datum:
 
-$x_{\text{CG}} = \frac{m_{\text{empty}} x_{\text{empty}} + \sum_i m_i x_i}{m_{\text{empty}} + \sum_i m_i}$
+$$
+\displaystyle x_{\mathrm{CG}} =
+\dfrac{m_{\mathrm{empty}}\,x_{\mathrm{empty}}+\sum_i m_i x_i}
+      {m_{\mathrm{empty}}+\sum_i m_i}
+$$
 
 The MATLAB script reproduces the six loading points and four boundary vertices used in the original coursework figure. This is a course reference diagram, not an independently verified manufacturer loading envelope:
 * **Point A:** $(4.377\text{ m}, 3585\text{ kg})$
@@ -92,7 +96,12 @@ $$\theta_{\text{pitch}}(\psi) = C + A \cos\psi + B \sin\psi$$
 ### Iterative Relaxation Loop
 Induced velocity $V_I$ is iteratively solved using fixed-point relaxation:
 
-$V_{I,\text{new}} = \frac{N_b\,dT}{4 \pi \rho r V_0 \, dR}, \quad V_I^{(k+1)} = 0.9 \, V_I^{(k)} + 0.1 \, V_{I,\text{new}}$
+$$
+\displaystyle V_{I,\mathrm{new}} =
+\dfrac{N_b\,dT}{4\pi\rho r V_0\,dR},
+\qquad
+V_I^{(k+1)}=0.9\,V_I^{(k)}+0.1\,V_{I,\mathrm{new}}
+$$
 
 Elemental thrust and resistive torque use the force components normal and tangential to the rotor disk:
 
